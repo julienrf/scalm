@@ -2,9 +2,9 @@ package mario
 
 import org.scalajs.dom.{document, window}
 import scalm.Html._
+import scalm.Sub._
 import scalm._
 import scala.math._
-import Html._
 import cats.syntax.all._
 
 object Main extends App {
@@ -50,7 +50,7 @@ object Main extends App {
     msg match {
       case ArrowUpPressed if model.y == 0.0 =>
         val newModel = (jump andThen applyPhysics)(model)
-        (newModel, Effects.Cmd.playSound("resources/jump-c-07.mp3", Void))
+        (newModel, Effects.Cmd.playSound("resources/jump-c-07.mp3"))
 
       case ArrowLeftPressed =>
         val newModel = (walkLeft andThen applyPhysics)(model)
@@ -73,19 +73,14 @@ object Main extends App {
     }
 
   def subscriptions(model: Model): Sub[Msg] = {
-    val keyLeftPressSub = Effects.keyPressSub(37, ArrowLeftPressed)
-    val keyRightPressSub = Effects.keyPressSub(39, ArrowRightPressed)
-    val keyLeftReleaseSub = Effects.keyReleaseSub(37, ArrowLeftReleased)
-    val keyRightReleaseSub = Effects.keyReleaseSub(39, ArrowRightReleased)
-    val keyUpSub = Effects.keyPressSub(38, ArrowUpPressed)
-    val fpsSub = Effects.requestAnimationFrameSub.map(_ => PassageOfTime)
 
-    Sub
-      .Combine(fpsSub, keyUpSub)
-      .combine(keyLeftPressSub)
-      .combine(keyRightPressSub)
-      .combine(keyLeftReleaseSub)
-      .combine(keyRightReleaseSub)
+    Effects.keyPressSub[Msg](37, ArrowLeftPressed) <+>
+      Effects.keyPressSub[Msg](39, ArrowRightPressed) <+>
+      Effects.keyReleaseSub[Msg](37, ArrowLeftReleased) <+>
+      Effects.keyReleaseSub[Msg](39, ArrowRightReleased) <+>
+      Effects.keyPressSub[Msg](38, ArrowUpPressed) <+>
+      Effects.requestAnimationFrameSub.map[Msg](_ => PassageOfTime)
+
   }
 
   def view(model: Model): Html[Msg] = {
@@ -100,8 +95,10 @@ object Main extends App {
     }
 
     val dir = model.dir.toString.toLowerCase
-    val css = Style("top", s"${posY}px") |+| Style("left",s"${posX}px")
+    val css = Style("top", s"${posY}px") |+| Style("left", s"${posX}px")
 
-    div(style(css), attr("id", "mario"), attr("class", "character "+verb + " " + dir))()
+    div(style(css),
+        attr("id", "mario"),
+        attr("class", "character " + verb + " " + dir))()
   }
 }

@@ -1,5 +1,5 @@
 # Canonical Mario example with Scalm.
-[Mario original Elm version](http://debug.elm-lang.org/edit/Mario.elm)
+[Mario Elm original version](http://debug.elm-lang.org/edit/Mario.elm)
 
 To compile the program run
 
