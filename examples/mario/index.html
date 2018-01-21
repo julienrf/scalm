@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Mario!</title>
+    <script src="dist/Mario.js"></script>
     <style>
       @font-face {
           font-family: "press_start_k";
@@ -37,10 +38,31 @@
         height: 40px;
         bottom: 0;
       }
+      .character {
+        position: absolute;
+      }
       #mario {
-        width: 100%;
-        height: 100%;
-        background-color: transparent;
+        width: 27px;
+        height: 27px;
+        background: url("resources/mario/stand/right.gif");
+      }
+      #mario.stand.left {
+        background: url("resources/mario/stand/left.gif");
+      }
+      #mario.stand.right {
+        background: url("resources/mario/stand/right.gif");
+      }
+      #mario.walk.left {
+        background: url("resources/mario/walk/left.gif");
+      }
+      #mario.walk.right {
+        background: url("resources/mario/walk/right.gif");
+      }
+      #mario.jump.left {
+        background: url("resources/mario/jump/left.gif");
+      }
+      #mario.jump.right {
+        background: url("resources/mario/jump/right.gif");
       }
       .goomba {
         width: 16px;
@@ -100,14 +122,14 @@
 </head>
 <body>
 <div id="ground"></div>
-<div id="mario"></div>
+<div id="mario" class="character stand right"></div>
 <div id="hud">
     <span id="player-name">Mario</span>
     <span id="player-lives"> 5</span>
     <div id="item-container"></div>
     <span id="player-score">  0</span>
+    <script type="text/javascript" src="./target/scala-2.12/scalajs-bundler/main/mario-fastopt-bundle.js"></script>
 </div>
-<script type="text/javascript" src="./target/scala-2.12/scalajs-bundler/main/mario-fastopt-bundle.js"></script>
 </body>
 </html>
 

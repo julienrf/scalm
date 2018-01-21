@@ -5,6 +5,7 @@ import scalm.Html._
 import scalm._
 import scala.math._
 import Html._
+import cats.syntax.all._
 
 object Main extends App {
 
@@ -89,8 +90,8 @@ object Main extends App {
 
   def view(model: Model): Html[Msg] = {
 
-    val posX = (window.innerWidth - 85) / 2 + model.x
-    val posY = (window.innerHeight - 85) - model.y
+    val posX = (window.innerWidth - 93) / 2 + model.x
+    val posY = (window.innerHeight - 93) - model.y
 
     val verb = (model.y > 0, model.vx != 0) match {
       case (true, _) => "jump"
@@ -102,10 +103,8 @@ object Main extends App {
     val transform =
       s"transform: matrix(1, 0, 0, 1, $posX, $posY)"
     val css =
-      s"padding: 0px; margin: 0px; display: block; width: 35px; height: 35px; position: absolute; opacity: 1; $transform; background-color: transparent;"
+      s"padding: 0px; margin: 0px; display: block; width: 27px; height: 27px; position: absolute; opacity: 1; $transform; background-color: transparent;"
 
-    div()(
-      img(style(css), src(s"resources/mario/$verb/$dir.gif"))
-    )
+    div(attr("id", "mario"), attr("class", verb + " " + dir), style(css))()
   }
 }
