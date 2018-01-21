@@ -1,5 +1,5 @@
 # Canonical Mario example with Scalm.
-[Scala Scalm](https://github.com/julienrf/scalm)
+[Mario original Elm version](http://debug.elm-lang.org/edit/Mario.elm)
 
 To compile the program run
 
@@ -10,4 +10,4 @@ To compile the program run
 
 Then start a local web server and open the `index.html` in the browser.
 
-[Demo online](https://salc2.github.io/mario-scalm)
+[Demo Mario Scalm Online](https://salc2.github.io/mario-scalm)
