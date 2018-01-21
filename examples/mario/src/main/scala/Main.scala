@@ -42,7 +42,7 @@ object Main extends App {
 
   val walkRight: Model => Model = _.copy(vx = 1.5, dir = Right)
 
-  val jump: Model => Model = _.copy(vy = 6.0)
+  val jump: Model => Model = _.copy(vy = 4.0)
 
   val applyPhysics: Model => Model = applyGravity compose applyMotion
 
@@ -90,8 +90,8 @@ object Main extends App {
 
   def view(model: Model): Html[Msg] = {
 
-    val posX = (window.innerWidth - 93) / 2 + model.x
-    val posY = (window.innerHeight - 93) - model.y
+    val posX = ((window.innerWidth / 2) * 100) / 300 + model.x
+    val posY = ((window.innerHeight - 200) * 100) / 300 - model.y
 
     val verb = (model.y > 0, model.vx != 0) match {
       case (true, _) => "jump"
@@ -100,11 +100,8 @@ object Main extends App {
     }
 
     val dir = model.dir.toString.toLowerCase
-    val transform =
-      s"transform: matrix(1, 0, 0, 1, $posX, $posY)"
-    val css =
-      s"padding: 0px; margin: 0px; display: block; width: 27px; height: 27px; position: absolute; opacity: 1; $transform; background-color: transparent;"
+    val css = Style("top", s"${posY}px") |+| Style("left",s"${posX}px")
 
-    div(attr("id", "mario"), attr("class", verb + " " + dir), style(css))()
+    div(style(css), attr("id", "mario"), attr("class", "character "+verb + " " + dir))()
   }
 }
