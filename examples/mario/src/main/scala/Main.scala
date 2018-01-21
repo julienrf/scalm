@@ -72,21 +72,19 @@ object Main extends App {
       case _             => (model, Cmd.Empty)
     }
 
-  def subscriptions(model: Model): Sub[Msg] = {
-
+  def subscriptions(model: Model): Sub[Msg] =
     Effects.keyPressSub[Msg](37, ArrowLeftPressed) <+>
       Effects.keyPressSub[Msg](39, ArrowRightPressed) <+>
       Effects.keyReleaseSub[Msg](37, ArrowLeftReleased) <+>
       Effects.keyReleaseSub[Msg](39, ArrowRightReleased) <+>
       Effects.keyPressSub[Msg](38, ArrowUpPressed) <+>
-      Effects.requestAnimationFrameSub.map[Msg](_ => PassageOfTime)
-
-  }
+      Effects.requestAnimationFrameSub.map[Msg](_ => PassageOfTime) <+>
+      inputsByTouchEventSub(model)
 
   def view(model: Model): Html[Msg] = {
 
-    val posX = ((window.innerWidth / 2) * 100) / 300 + model.x
-    val posY = ((window.innerHeight - 200) * 100) / 300 - model.y
+    val (posX, posY) =
+      relativePositionWithScreen(window.innerWidth, window.innerHeight, model)
 
     val verb = (model.y > 0, model.vx != 0) match {
       case (true, _) => "jump"
@@ -100,5 +98,40 @@ object Main extends App {
     div(style(css),
         attr("id", "mario"),
         attr("class", "character " + verb + " " + dir))()
+  }
+
+  def relativePositionWithScreen(screenX: Double,
+                                 screenY: Double,
+                                 model: Model): (Double, Double) = {
+    val posX = ((screenX / 2) * 100) / 300 + model.x
+    val posY = ((screenY - 200) * 100) / 300 - model.y
+    (posX, posY)
+  }
+
+  def inputsByTouchEventSub(model: Model): Sub[Msg] = {
+    val (posX, posY) =
+      relativePositionWithScreen(window.innerWidth, window.innerHeight, model)
+
+    def whereIsTheTouch(pos: (Double, Double)) = {
+      val (x, y) = pos
+      (posX < x / 3, posY < y / 3)
+    }
+
+    val UNDER_FRONT_MARIO = (true, true)
+    val UNDER_BEHIND_MARIO = (false, true)
+
+    Effects.touchStartSub
+      .map(whereIsTheTouch)
+      .map {
+        case UNDER_FRONT_MARIO  => ArrowRightPressed
+        case UNDER_BEHIND_MARIO => ArrowLeftPressed
+        case _                  => ArrowUpPressed
+      } <+> Effects.touchEndSub
+      .map(whereIsTheTouch)
+      .map {
+        case UNDER_FRONT_MARIO  => ArrowRightReleased
+        case UNDER_BEHIND_MARIO => ArrowLeftReleased
+        case _                  => Void
+      }
   }
 }
