@@ -43,6 +43,34 @@ object Effects {
     }
   )
 
+  val touchStartSub: Sub[(Double, Double)] =
+    ofTotalObservable[(Double, Double)](
+      s"touchStart", { observer =>
+        val listener = (touchEvent: TouchEvent) => {
+          observer.onNext(
+            (touchEvent.touches.item(0).clientX,
+             touchEvent.touches.item(0).clientY))
+        }
+        dom.window.addEventListener("touchstart", listener)
+        () =>
+          dom.window.removeEventListener("touchstart", listener)
+      }
+    )
+
+  val touchEndSub: Sub[(Double, Double)] =
+    ofTotalObservable[(Double, Double)](
+      s"touchEnd", { observer =>
+        val listener = (touchEvent: TouchEvent) => {
+          observer.onNext(
+            (touchEvent.changedTouches.item(0).clientX,
+             touchEvent.changedTouches.item(0).clientY))
+        }
+        dom.window.addEventListener("touchend", listener)
+        () =>
+          dom.window.removeEventListener("touchend", listener)
+      }
+    )
+
   object Cmd {
     def playSound(url: String): Cmd[Nothing] =
       Task
@@ -52,9 +80,11 @@ object Effects {
               document.createElement("audio").asInstanceOf[HTMLAudioElement]
             audio.src = url
             audio.onloadeddata = (_: Event) => audio.play()
-            () => ()
+            () =>
+              ()
           }
-        }.perform
+        }
+        .perform
   }
 
 }
