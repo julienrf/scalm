@@ -23,38 +23,38 @@ object Effects {
 
   def keyPressSub[M](keyCode: Int, msg: M): Sub[M] = ofTotalObservable[M](
     s"keyDown$keyCode", { observer =>
-      dom.window.addEventListener("keydown", (keyEvent: KeyboardEvent) => {
+      val listener = (keyEvent: KeyboardEvent) => {
         if (keyEvent.keyCode == keyCode) observer.onNext(msg)
-      })
+      }
+      dom.window.addEventListener("keydown", listener)
       () =>
-        ()
+        dom.window.removeEventListener("keydown", listener)
     }
   )
 
   def keyReleaseSub[M](keyCode: Int, msg: M): Sub[M] = ofTotalObservable[M](
     s"keyUp$keyCode", { observer =>
-      dom.window.addEventListener("keyup", (keyEvent: KeyboardEvent) => {
+      val listener = (keyEvent: KeyboardEvent) => {
         if (keyEvent.keyCode == keyCode) observer.onNext(msg)
-      })
+      }
+      dom.window.addEventListener("keyup", listener)
       () =>
-        ()
+        dom.window.removeEventListener("keyup", listener)
     }
   )
 
   object Cmd {
-    def playSound[Msg](url: String, msgBack: Msg): Cmd[Msg] =
+    def playSound(url: String): Cmd[Nothing] =
       Task
-        .RunObservable[Unit, Msg] { _ =>
+        .RunObservable[Nothing, Nothing] { _ =>
           {
             val audio =
               document.createElement("audio").asInstanceOf[HTMLAudioElement]
             audio.src = url
             audio.onloadeddata = (_: Event) => audio.play()
-            () =>
-              ()
+            () => ()
           }
-        }
-        .attempt(_ => msgBack)
+        }.perform
   }
 
 }
