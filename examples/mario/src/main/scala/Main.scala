@@ -4,6 +4,7 @@ import org.scalajs.dom.{document, window}
 import scalm.Html._
 import scalm.Sub._
 import scalm._
+
 import scala.math._
 import cats.syntax.all._
 
@@ -29,7 +30,6 @@ object Main extends App {
   case object ArrowLeftReleased extends Msg
   case object ArrowRightReleased extends Msg
   case object ArrowUpPressed extends Msg
-  case object Void extends Msg
 
   val gravity = 0.25
   val applyGravity: Mario => Mario = (mario) =>
@@ -79,7 +79,8 @@ object Main extends App {
       Effects.keyReleaseSub(39).map(_ => ArrowRightReleased) <+>
       Effects.keyPressSub(38).map(_ => ArrowUpPressed) <+>
       Effects.requestAnimationFrameSub.map(_ => PassageOfTime) <+>
-      inputsByTouchEventSub(model)
+      Effects.touchPressedSub(model) <+>
+      Effects.touchReleasedSub(model)
 
   def view(model: Model): Html[Msg] = {
 
@@ -106,34 +107,5 @@ object Main extends App {
     val posX = ((screenX / 2) * 100) / 300 + model.x
     val posY = ((screenY - 200) * 100) / 300 - model.y
     (posX, posY)
-  }
-
-  def inputsByTouchEventSub(model: Model): Sub[Msg] = {
-
-    def whereIsTheTouch(pos: (Double, Double)) = {
-
-      val (posX, posY) =
-        modelPositionScreen(window.innerWidth, window.innerHeight, model)
-
-      val (x, y) = pos
-      (posX < x / 3, posY < y / 3)
-    }
-
-    val UNDER_FRONT_MARIO = (true, true)
-    val UNDER_BEHIND_MARIO = (false, true)
-
-    Effects.touchStartSub
-      .map(whereIsTheTouch)
-      .map {
-        case UNDER_FRONT_MARIO  => ArrowRightPressed
-        case UNDER_BEHIND_MARIO => ArrowLeftPressed
-        case _                  => ArrowUpPressed
-      } <+> Effects.touchEndSub
-      .map(whereIsTheTouch)
-      .map {
-        case UNDER_FRONT_MARIO  => ArrowRightReleased
-        case UNDER_BEHIND_MARIO => ArrowLeftReleased
-        case _                  => Void
-      }
   }
 }
