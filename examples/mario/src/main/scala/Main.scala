@@ -73,18 +73,18 @@ object Main extends App {
     }
 
   def subscriptions(model: Model): Sub[Msg] =
-    Effects.keyPressSub[Msg](37, ArrowLeftPressed) <+>
-      Effects.keyPressSub[Msg](39, ArrowRightPressed) <+>
-      Effects.keyReleaseSub[Msg](37, ArrowLeftReleased) <+>
-      Effects.keyReleaseSub[Msg](39, ArrowRightReleased) <+>
-      Effects.keyPressSub[Msg](38, ArrowUpPressed) <+>
-      Effects.requestAnimationFrameSub.map[Msg](_ => PassageOfTime) <+>
+    Effects.keyPressSub(37).map[Msg](_ => ArrowLeftPressed) <+>
+      Effects.keyPressSub(39).map(_ => ArrowRightPressed) <+>
+      Effects.keyReleaseSub(37).map(_ => ArrowLeftReleased) <+>
+      Effects.keyReleaseSub(39).map(_ => ArrowRightReleased) <+>
+      Effects.keyPressSub(38).map(_ => ArrowUpPressed) <+>
+      Effects.requestAnimationFrameSub.map(_ => PassageOfTime) <+>
       inputsByTouchEventSub(model)
 
   def view(model: Model): Html[Msg] = {
 
     val (posX, posY) =
-      relativePositionWithScreen(window.innerWidth, window.innerHeight, model)
+      modelPositionScreen(window.innerWidth, window.innerHeight, model)
 
     val verb = (model.y > 0, model.vx != 0) match {
       case (true, _) => "jump"
@@ -100,19 +100,21 @@ object Main extends App {
         attr("class", "character " + verb + " " + dir))()
   }
 
-  def relativePositionWithScreen(screenX: Double,
-                                 screenY: Double,
-                                 model: Model): (Double, Double) = {
+  def modelPositionScreen(screenX: Double,
+                          screenY: Double,
+                          model: Model): (Double, Double) = {
     val posX = ((screenX / 2) * 100) / 300 + model.x
     val posY = ((screenY - 200) * 100) / 300 - model.y
     (posX, posY)
   }
 
   def inputsByTouchEventSub(model: Model): Sub[Msg] = {
-    val (posX, posY) =
-      relativePositionWithScreen(window.innerWidth, window.innerHeight, model)
 
     def whereIsTheTouch(pos: (Double, Double)) = {
+
+      val (posX, posY) =
+        modelPositionScreen(window.innerWidth, window.innerHeight, model)
+
       val (x, y) = pos
       (posX < x / 3, posY < y / 3)
     }

@@ -21,55 +21,30 @@ object Effects {
     }
   )
 
-  def keyPressSub[M](keyCode: Int, msg: M): Sub[M] = ofTotalObservable[M](
-    s"keyDown$keyCode", { observer =>
-      val listener = (keyEvent: KeyboardEvent) => {
-        if (keyEvent.keyCode == keyCode) observer.onNext(msg)
-      }
-      dom.window.addEventListener("keydown", listener)
-      () =>
-        dom.window.removeEventListener("keydown", listener)
+  def keyPressSub(keyCode: Int): Sub[KeyboardEvent] =
+    Sub.fromEvent[KeyboardEvent, KeyboardEvent]("keydown", dom.window) {
+      event =>
+        if (event.keyCode == keyCode) Some(event) else None
     }
-  )
 
-  def keyReleaseSub[M](keyCode: Int, msg: M): Sub[M] = ofTotalObservable[M](
-    s"keyUp$keyCode", { observer =>
-      val listener = (keyEvent: KeyboardEvent) => {
-        if (keyEvent.keyCode == keyCode) observer.onNext(msg)
-      }
-      dom.window.addEventListener("keyup", listener)
-      () =>
-        dom.window.removeEventListener("keyup", listener)
+  def keyReleaseSub(keyCode: Int): Sub[KeyboardEvent] =
+    Sub.fromEvent[KeyboardEvent, KeyboardEvent]("keyup", dom.window) { event =>
+      if (event.keyCode == keyCode) Some(event) else None
     }
-  )
 
   val touchStartSub: Sub[(Double, Double)] =
-    ofTotalObservable[(Double, Double)](
-      s"touchStart", { observer =>
-        val listener = (touchEvent: TouchEvent) => {
-          observer.onNext(
-            (touchEvent.touches.item(0).clientX,
-             touchEvent.touches.item(0).clientY))
-        }
-        dom.window.addEventListener("touchstart", listener)
-        () =>
-          dom.window.removeEventListener("touchstart", listener)
-      }
-    )
+    Sub.fromEvent[TouchEvent, (Double, Double)]("touchstart", dom.window) {
+      event =>
+        val first = event.touches.item(0)
+        Some(first.clientX, first.clientY)
+    }
 
   val touchEndSub: Sub[(Double, Double)] =
-    ofTotalObservable[(Double, Double)](
-      s"touchEnd", { observer =>
-        val listener = (touchEvent: TouchEvent) => {
-          observer.onNext(
-            (touchEvent.changedTouches.item(0).clientX,
-             touchEvent.changedTouches.item(0).clientY))
-        }
-        dom.window.addEventListener("touchend", listener)
-        () =>
-          dom.window.removeEventListener("touchend", listener)
-      }
-    )
+    Sub.fromEvent[TouchEvent, (Double, Double)]("touchend", dom.window) {
+      event =>
+        val first = event.changedTouches.item(0)
+        Some(first.clientX, first.clientY)
+    }
 
   object Cmd {
     def playSound(url: String): Cmd[Nothing] =
@@ -84,7 +59,7 @@ object Effects {
               ()
           }
         }
-        .perform
+        .attempt(_.merge)
   }
 
 }
